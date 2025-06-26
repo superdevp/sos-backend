@@ -9,7 +9,7 @@ const initializeEmailService = async () => {
     service: "gmail",
     auth: {
       user: "superdevp@gmail.com",
-      pass: "xtyq ivam agdy raic",
+      pass: "zgas mvts swxw aqel",
     },
   });
 
@@ -32,7 +32,7 @@ const sendOTPEmail = async (email, otp, firstname = "") => {
     const greeting = firstname ? `Hello ${firstname},` : "Hello,";
 
     const mailOptions = {
-      from: '"Deligo Team" <superdevp@gmail.com>',
+      from: '"SOS Support" <superdevp@gmail.com>',
       to: email,
       subject: "Your Registration OTP Code",
       text: `${greeting}\n\nYour OTP code for registration is: ${otp}. This code will expire in 10 minutes.`,

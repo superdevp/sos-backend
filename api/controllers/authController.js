@@ -78,7 +78,7 @@ const register = async (req, res, next) => {
     // Send OTP email
     await sendOTPEmail(email, otp, firstname);
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       message:
         "Registration initiated. Please verify your email with the OTP sent.",
@@ -99,7 +99,7 @@ const login = async (req, res, next) => {
 
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
-      return res.status(401).json({
+      return res.status(400).json({
         success: false,
         message: "Invalid credentials",
       });
@@ -108,7 +108,7 @@ const login = async (req, res, next) => {
     // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(401).json({
+      return res.status(400).json({
         success: false,
         message: "Invalid credentials",
       });
@@ -255,7 +255,7 @@ const verifyOTPAndRegister = async (req, res, next) => {
     );
     const refreshToken = await generateRefreshToken(user);
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       message: "Registration completed successfully",
       accessToken,
