@@ -17,6 +17,6 @@ auth.post("/refresh-token", refreshToken);
 auth.post("/logout", logout);
 auth.post("/verify-otp-and-register", verifyOTPAndRegister);
 auth.post("/resend-otp-for-register", resendOTPForRegister);
-auth.get("/me", verifyToken, getCurrentUser);
+auth.get("/validate", verifyToken, getCurrentUser);
 
 module.exports = auth;
