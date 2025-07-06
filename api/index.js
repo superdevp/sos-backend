@@ -38,6 +38,8 @@ app.get("/", function (req, res) {
 
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/user'));
+app.use('/api/sos', require('./routes/sos'));
+app.use('/api/settings', require('./routes/settings'));
 
 app.listen(port, () => console.log(`Server ready on port ${port}.`));
 
