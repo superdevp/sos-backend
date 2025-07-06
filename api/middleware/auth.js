@@ -21,6 +21,8 @@ const verifyToken = (req, res, next) => {
       req.user = {
         userId: decoded.userId,
         role: decoded.role,
+        name: decoded.username,
+        email: decoded.email
       };
 
       next();

@@ -72,7 +72,7 @@ const sendPasswordResetEmail = async (email, otp, name = "") => {
     const greeting = name ? `Hello ${name},` : "Hello,";
 
     const mailOptions = {
-      from: EMAIL_FROM || '"Auth Service" <auth@example.com>',
+      from: '"SOS Support" <superdevp@gmail.com>',
       to: email,
       subject: "Password Reset Request",
       text: `${greeting}\n\nYour OTP code for password reset is: ${otp}. This code will expire in 10 minutes.\n\nIf you didn't request a password reset, please ignore this email or contact support if you have concerns.`,
@@ -104,7 +104,95 @@ const sendPasswordResetEmail = async (email, otp, name = "") => {
   }
 };
 
+// Send SOS email
+const sendSOSEmail = async (email, address, name = "", user_email = "") => {
+  try {
+    if (!transporter) {
+      await initializeEmailService();
+    }
+
+    const mailOptions = {
+      from: 'superdevp@gmail.com',
+      to: email,
+      subject: "SOS Request",
+      text: `Dear [Recipient's Name],
+
+              ${name} is in urgent need of assistance. Please find their current details below:
+
+              - Location: ${address}
+              - **Contact Information**: ${user_email}
+
+              Please respond as soon as possible. Your prompt help is greatly appreciated.
+
+              Thank you.
+
+              Sincerely
+              SOS Team`,
+      html: `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>SOS Email</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    line-height: 1.6;
+                    color: #333;
+                }
+                .container {
+                    padding: 20px;
+                    border: 1px solid #ddd;
+                    border-radius: 5px;
+                    max-width: 600px;
+                    margin: 0 auto;
+                }
+                .header {
+                    font-size: 24px;
+                    font-weight: bold;
+                    color: #d9534f;
+                }
+                .details {
+                    margin-top: 20px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">SOS: Immediate Assistance Required</div>
+                <div class="details">
+                    <p>Hello,</p>
+                    <p>${name} is in urgent need of assistance. Please find their current details below:</p>
+                    <ul>
+                        <li><strong>Location:</strong> ${address}</li>
+                        <li><strong>Contact Information:</strong> ${user_email}</li>
+                    </ul>
+                    <p>Please respond as soon as possible. Your prompt help is greatly appreciated.</p>
+                    <p>Thank you.</p>
+                    <p>Sincerely,<br>SOS team</p>
+                </div>
+            </div>
+        </body>
+        </html>
+      `,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+
+    if (NODE_ENV !== "production") {
+      console.log("Preview URL:", nodemailer.getTestMessageUrl(info));
+    }
+
+    return info;
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw error;
+  }
+};
+
 module.exports = {
   sendOTPEmail,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  sendSOSEmail
 }

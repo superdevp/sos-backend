@@ -1,9 +1,9 @@
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET;
 
-const generateAccessToken = (userId, username, role) => {
+const generateAccessToken = (userId, username, role, email) => {
   return jwt.sign(
-    { userId, username, role },
+    { userId, username, role, email },
     JWT_SECRET,
     { expiresIn: "1d" } // Short-lived token
   );

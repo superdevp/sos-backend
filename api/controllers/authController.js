@@ -122,7 +122,8 @@ const login = async (req, res, next) => {
     const accessToken = generateAccessToken(
       user._id,
       `${user.firstname} ${user.lastname}`,
-      user.role
+      user.role,
+      user.email
     );
     const refreshToken = await generateRefreshToken(user);
 
@@ -166,7 +167,7 @@ const refreshToken = async (req, res, next) => {
       (t) => t.token !== refreshToken
     );
 
-    const accessToken = generateAccessToken(user._id, user.username, user.role);
+    const accessToken = generateAccessToken(user._id, user.username, user.role, user.email);
     const newRefreshToken = await generateRefreshToken(user);
 
     res.json({
@@ -251,7 +252,8 @@ const verifyOTPAndRegister = async (req, res, next) => {
     const accessToken = generateAccessToken(
       user._id,
       `${user.firstname} ${user.lastname}`,
-      user.role
+      user.role,
+      user.email
     );
     const refreshToken = await generateRefreshToken(user);
 
