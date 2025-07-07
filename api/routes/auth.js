@@ -7,6 +7,7 @@ const {
   verifyOTPAndRegister,
   resendOTPForRegister,
   getCurrentUser,
+  removeAccount,
 } = require("../controllers/authController");
 const verifyToken = require("../middleware/auth");
 const auth = express.Router();
@@ -18,5 +19,6 @@ auth.post("/logout", logout);
 auth.post("/verify-otp-and-register", verifyOTPAndRegister);
 auth.post("/resend-otp-for-register", resendOTPForRegister);
 auth.get("/validate", verifyToken, getCurrentUser);
+auth.post("/remove-account", verifyToken, removeAccount);
 
 module.exports = auth;

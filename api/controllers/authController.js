@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const TempUser = require("../models/TempUser");
+const Setting = require("../models/Settings");
 const {
   generateOTP,
   hashOTP,
@@ -343,6 +344,31 @@ const getCurrentUser = async (req, res, next) => {
   }
 };
 
+const removeAccount = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    user.refreshTokens = [];
+    await user.save({ validateBeforeSave: false });
+
+    await Setting.deleteOne({ userId: userId });
+
+    await User.deleteOne({ _id: userId });
+
+    res.json({
+      success: true,
+      message: "Account removed successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -350,5 +376,6 @@ module.exports = {
   logout,
   verifyOTPAndRegister,
   resendOTPForRegister,
-  getCurrentUser
+  getCurrentUser,
+  removeAccount
 };

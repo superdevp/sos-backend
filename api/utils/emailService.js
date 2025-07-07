@@ -32,7 +32,7 @@ const sendOTPEmail = async (email, otp, firstname = "") => {
     const greeting = firstname ? `Hello ${firstname},` : "Hello,";
 
     const mailOptions = {
-      from: '"SOS Support" <superdevp@gmail.com>',
+      from: 'superdevp@gmail.com',
       to: email,
       subject: "Your Registration OTP Code",
       text: `${greeting}\n\nYour OTP code for registration is: ${otp}. This code will expire in 10 minutes.`,
@@ -72,7 +72,7 @@ const sendPasswordResetEmail = async (email, otp, name = "") => {
     const greeting = name ? `Hello ${name},` : "Hello,";
 
     const mailOptions = {
-      from: '"SOS Support" <superdevp@gmail.com>',
+      from: 'superdevp@gmail.com',
       to: email,
       subject: "Password Reset Request",
       text: `${greeting}\n\nYour OTP code for password reset is: ${otp}. This code will expire in 10 minutes.\n\nIf you didn't request a password reset, please ignore this email or contact support if you have concerns.`,
