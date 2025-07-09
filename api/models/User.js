@@ -19,12 +19,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Email is required'],
     unique: true,
-    trim: true,
-    lowercase: true,
-    match: [
-      /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-      'Please provide a valid email address'
-    ]
+    trim: true
   },
   age: {
     type: Number,
@@ -52,6 +47,10 @@ const userSchema = new mongoose.Schema({
     token: String,
     expiresAt: Date
   }],
+  passwordResetOTP: {
+    code: String,
+    expiresAt: Date
+  },
   apiKeys: [{
     key: String,
     name: String,

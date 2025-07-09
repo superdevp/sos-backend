@@ -16,7 +16,8 @@ const {
   generateRefreshToken,
   verifyRefreshToken
 } = require('../utils/token');
-const { sendOTPEmail } = require('../utils/emailService');
+const { sendOTPEmail, sendPasswordResetEmail } = require('../utils/emailService');
+const { sendSMS } = require("../utils/smsService");
 
 const register = async (req, res, next) => {
   try {
@@ -77,7 +78,16 @@ const register = async (req, res, next) => {
     });
 
     // Send OTP email
-    await sendOTPEmail(email, otp, firstname);
+    const isEmail = /^[\w.-]+@[\w.-]+\.\w{2,}$/.test(email);
+    const isPhoneNumber = /^\+?\d{10,15}$/.test(email);
+
+    if(isPhoneNumber) {
+      await sendSMS(email, otp, firstname);
+    } else if(isEmail) {
+      await sendOTPEmail(email, otp, firstname);
+    } else {
+      throw new BadRequestError("Invalid email address or phone number");
+    }
 
     res.status(200).json({
       success: true,
@@ -304,7 +314,17 @@ const resendOTPForRegister = async (req, res, next) => {
 
     await tempUser.save();
 
-    await sendOTPEmail(email, otp);
+    // Send OTP email
+    const isEmail = /^[\w.-]+@[\w.-]+\.\w{2,}$/.test(email);
+    const isPhoneNumber = /^\+?\d{10,15}$/.test(email);
+
+    if(isPhoneNumber) {
+      await sendSMS(email, otp);
+    } else if(isEmail) {
+      await sendOTPEmail(email, otp);
+    } else {
+      throw new BadRequestError("Invalid email address or phone number");
+    }
 
     res.json({
       success: true,
@@ -369,6 +389,118 @@ const removeAccount = async (req, res, next) => {
   }
 };
 
+const requestPasswordReset = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      throw new BadRequestError("Email is required");
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new NotFoundError("User not found with that email");
+    }
+
+    const otp = generateOTP(5);
+    const hashedOTP = hashOTP(otp);
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+    user.passwordResetOTP = {
+      code: hashedOTP,
+      expiresAt: otpExpiry,
+    };
+
+    await user.save({ validateBeforeSave: false });
+
+    await sendPasswordResetEmail(email, otp, user.firstname);
+
+    res.json({
+      success: true,
+      message: "Password reset OTP sent to your email",
+      email,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const verifyPasswordResetOTP = async (req, res, next) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+      throw new BadRequestError("Email, OTP, and new password are required");
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    if (!user.passwordResetOTP || !user.passwordResetOTP.code) {
+      throw new BadRequestError("No password reset request found");
+    }
+
+    if (user.passwordResetOTP.expiresAt < new Date()) {
+      user.passwordResetOTP = undefined;
+      await user.save({ validateBeforeSave: false });
+      throw new BadRequestError("OTP has expired. Please request a new one.");
+    }
+
+    if (!verifyOTP(otp, user.passwordResetOTP.code)) {
+      throw new BadRequestError("Invalid OTP");
+    }
+
+    user.password = newPassword;
+    user.passwordResetOTP = undefined;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Password reset successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const resendPasswordResetOTP = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      throw new BadRequestError("Email is required");
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new NotFoundError("User not found with that email");
+    }
+
+    const otp = generateOTP(5);
+    const hashedOTP = hashOTP(otp);
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+    user.passwordResetOTP = {
+      code: hashedOTP,
+      expiresAt: otpExpiry,
+    };
+
+    await user.save({ validateBeforeSave: false });
+
+    await sendPasswordResetEmail(email, otp, user.firstname);
+
+    res.json({
+      success: true,
+      message: "Password reset OTP resent successfully",
+      email,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -377,5 +509,8 @@ module.exports = {
   verifyOTPAndRegister,
   resendOTPForRegister,
   getCurrentUser,
-  removeAccount
+  removeAccount,
+  requestPasswordReset,
+  verifyPasswordResetOTP,
+  resendPasswordResetOTP
 };
