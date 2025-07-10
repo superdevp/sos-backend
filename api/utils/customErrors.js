@@ -42,5 +42,6 @@ module.exports = {
   UnauthorizedError,
   ForbiddenError,
   NotFoundError,
-  TooManyRequestsError
+  TooManyRequestsError,
+  CustomError
 }

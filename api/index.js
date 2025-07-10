@@ -40,6 +40,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/user'));
 app.use('/api/sos', require('./routes/sos'));
 app.use('/api/settings', require('./routes/settings'));
+app.use('/api/education', require('./routes/education'));
 
 app.listen(port, () => console.log(`Server ready on port ${port}.`));
 
