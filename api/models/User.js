@@ -58,6 +58,48 @@ const userSchema = new mongoose.Schema({
     lastUsed: Date,
     permissions: [String]
   }],
+  // SOS Activity tracking
+  sosActivities: [{
+    timestamp: {
+      type: Date,
+      default: Date.now
+    },
+    location: {
+      latitude: Number,
+      longitude: Number,
+      address: String
+    },
+    status: {
+      type: String,
+      enum: ['sent', 'received', 'resolved'],
+      default: 'sent'
+    },
+    recipientEmail: String,
+    notes: String
+  }],
+  // Login Activity tracking
+  loginActivities: [{
+    timestamp: {
+      type: Date,
+      default: Date.now
+    },
+    deviceInfo: {
+      userAgent: String,
+      ipAddress: String,
+      deviceType: String
+    },
+    location: {
+      ipAddress: String,
+      country: String,
+      city: String,
+      region: String
+    },
+    success: {
+      type: Boolean,
+      default: true
+    },
+    failureReason: String
+  }],
   createdAt: {
     type: Date,
     default: Date.now

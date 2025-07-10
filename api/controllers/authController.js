@@ -18,6 +18,7 @@ const {
 } = require('../utils/token');
 const { sendOTPEmail, sendPasswordResetEmail } = require('../utils/emailService');
 const { sendSMS } = require("../utils/smsService");
+const { detectDeviceType, getClientIP } = require('../utils/deviceDetection');
 
 const register = async (req, res, next) => {
   try {
@@ -110,6 +111,21 @@ const login = async (req, res, next) => {
 
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
+      // Log failed login attempt
+      const failedUser = await User.findOne({ email });
+      if (failedUser) {
+        failedUser.loginActivities.push({
+          deviceInfo: {
+            userAgent: req.headers['user-agent'] || 'Unknown',
+            ipAddress: getClientIP(req),
+            deviceType: detectDeviceType(req.headers['user-agent'])
+          },
+          success: false,
+          failureReason: 'User not found'
+        });
+        await failedUser.save({ validateBeforeSave: false });
+      }
+      
       return res.status(400).json({
         success: false,
         message: "Invalid credentials",
@@ -119,11 +135,33 @@ const login = async (req, res, next) => {
     // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
+      // Log failed login attempt
+      user.loginActivities.push({
+        deviceInfo: {
+          userAgent: req.headers['user-agent'] || 'Unknown',
+          ipAddress: getClientIP(req),
+          deviceType: detectDeviceType(req.headers['user-agent'])
+        },
+        success: false,
+        failureReason: 'Invalid password'
+      });
+      await user.save({ validateBeforeSave: false });
+      
       return res.status(400).json({
         success: false,
         message: "Invalid credentials",
       });
     }
+
+    // Log successful login activity
+    user.loginActivities.push({
+      deviceInfo: {
+        userAgent: req.headers['user-agent'] || 'Unknown',
+        ipAddress: getClientIP(req),
+        deviceType: detectDeviceType(req.headers['user-agent'])
+      },
+      success: true
+    });
 
     // Update last login
     user.lastLogin = Date.now();
